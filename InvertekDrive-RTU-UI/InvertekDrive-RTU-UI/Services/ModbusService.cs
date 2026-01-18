@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO.Ports;
 using InvertekDrive_RTU_UI.ViewModel;
 using Modbus.Device;
@@ -27,7 +28,8 @@ public static class ModbusService
 
     #region Is Connected Store State
 
-    public static bool IsConnected { get; private set; }
+    public static bool
+        IsConnected { get; private set; }
 
     #endregion
 
@@ -45,7 +47,6 @@ public static class ModbusService
         {
             try
             {
-
                 SerialStation = new SerialPort(serialPort);
                 SerialStation.BaudRate = baudRate;
                 SerialStation.DataBits = dataBits;
@@ -68,21 +69,54 @@ public static class ModbusService
                 Master = ModbusSerialMaster.CreateRtu(Adapter);
 
                 IsConnected = true;
-                
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e);
                 return false;
             }
-
         }
+
+        return true;
+    }
+
+    #endregion
+
+    #region Disconnect Modbus Serial Master
+
+    public static bool DisconnectModbusMaster()
+    {
+        if (IsConnected)
+        {
+            try
+            {
+                Master?.Dispose();
+                Adapter?.Dispose();
+                SerialStation?.Close();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return false;
+            }
+        }
+
+        IsConnected = false;
         return true;
     }
 
     #endregion
     
-    #region Disconnect Modbus Serial Master
-    
+    #region Get Com Ports from local PC
+
+    public static void GetComPorts(ObservableCollection<string> ports)
+    {
+        string[] getPorts = SerialPort.GetPortNames();
+        foreach (string port in getPorts)
+        {
+            if  (!ports.Contains(port))
+                ports.Add(port);
+        }
+    }
     #endregion
 }

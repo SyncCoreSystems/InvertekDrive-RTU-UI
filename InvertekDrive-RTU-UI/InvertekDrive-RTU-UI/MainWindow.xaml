@@ -9,6 +9,7 @@
         Height="750" Width="1000"
         RenderOptions.BitmapScalingMode="HighQuality"
         SizeToContent="WidthAndHeight"
+        ResizeMode="CanMinimize,NoResize"
         WindowStartupLocation="CenterScreen"
         Background="#F0F0F0">
     
@@ -145,14 +146,8 @@
                 </Grid.ColumnDefinitions>
 
                 <Label Grid.Column="0" Content="COM Port:" Margin="5,0"/>
-                <ComboBox Grid.Column="1" x:Name="cmbComPort" Margin="5,0">
-                    <ComboBoxItem Content="COM1"/>
-                    <ComboBoxItem Content="COM2"/>
-                    <ComboBoxItem Content="COM3" IsSelected="True"/>
-                    <ComboBoxItem Content="COM4"/>
-                    <ComboBoxItem Content="COM5"/>
-                    <ComboBoxItem Content="COM6"/>
-                </ComboBox>
+                <ComboBox Grid.Column="1" x:Name="cmbComPort" Margin="5,0" ItemsSource="{Binding ComPorts}" 
+                Text="{Binding SelectedComPort}"/>
 
                 <Label Grid.Column="2" Content="Baud Rate:" Margin="5,0"/>
                 <ComboBox Grid.Column="3" x:Name="cmbBaudRate" Margin="5,0"
@@ -165,11 +160,12 @@
 
                 <Button Grid.Column="7" x:Name="btnConnect" Content="Connect" 
                         Style="{StaticResource ConnectButton}"
-                        Command="{Binding DebugShow}"/>
+                        />
                 <Button Grid.Column="8" x:Name="btnDisconnect" Content="Disconnect" 
                         Style="{StaticResource ResetButton}"/>
                 <Button Grid.Column="9" x:Name="btnRefreshPorts" Content="Port Refresh" 
-                        Style="{StaticResource PortRefresh}"/>
+                        Style="{StaticResource PortRefresh}"
+                        Command="{Binding UpdateLocalPorts}"/>
             </Grid>
         </GroupBox>
 
@@ -252,6 +248,19 @@
                     <TextBlock FontSize="14" FontWeight="Normal">
                         <Run Text="Status:" Foreground="#333"/>
                         <Run x:Name="txtDriveStatus" Text="Running Forward" FontWeight="SemiBold" Foreground="#2C3E50"/>
+                    </TextBlock>
+                    <!-- Modbus Status Indicator -->
+                    <Ellipse x:Name="modbusStatusIndicator" Width="14" Height="14" 
+                             Fill="#f5c125" Margin="30,0,10,0">
+                        <Ellipse.Effect>
+                            <DropShadowEffect Color="#27AE60" ShadowDepth="0" BlurRadius="8"/>
+                        </Ellipse.Effect>
+                    </Ellipse>
+                    <TextBlock FontSize="14" FontWeight="Normal">
+                        <Run Text="Modbus Status:" Foreground="#333"/>
+                        <Run x:Name="txtModbusStatus" Text="{Binding ModbusConnectionStatus, Mode=OneWay}" 
+                        FontWeight="SemiBold" 
+                        Foreground="#2C3E50"/>
                     </TextBlock>
                 </StackPanel>
             </StackPanel>

@@ -1,10 +1,9 @@
 {
   "version": 2,
-  "dgSpecHash": "2XpI57w9uyc=",
+  "dgSpecHash": "u/Z8lhgb1QY=",
   "success": true,
   "projectFilePath": "C:\\Users\\stive\\Documents\\VS_Projects\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\stive\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.0\\communitytoolkit.mvvm.8.4.0.nupkg.sha512",
     "C:\\Users\\stive\\.nuget\\packages\\nmodbus4.netcore\\4.0.0\\nmodbus4.netcore.4.0.0.nupkg.sha512",
     "C:\\Users\\stive\\.nuget\\packages\\runtime.android-arm.runtime.native.system.io.ports\\10.0.2\\runtime.android-arm.runtime.native.system.io.ports.10.0.2.nupkg.sha512",
     "C:\\Users\\stive\\.nuget\\packages\\runtime.android-arm64.runtime.native.system.io.ports\\10.0.2\\runtime.android-arm64.runtime.native.system.io.ports.10.0.2.nupkg.sha512",

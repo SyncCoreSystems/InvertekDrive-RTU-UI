@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("InvertekDrive-RTU-UI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b5583337acac79403b0abe36c2256253868c2f3d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+815abcc5bd25cb1e4f4b12ee90438df3bfed112c")]
 [assembly: System.Reflection.AssemblyProductAttribute("InvertekDrive-RTU-UI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("InvertekDrive-RTU-UI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -18,7 +18,6 @@ C:\Users\stive\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\I
 C:\Users\stive\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\obj\Debug\net10.0-windows\InvertekDrive-RTU-UI.pdb
 C:\Users\stive\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\obj\Debug\net10.0-windows\InvertekDrive-RTU-UI.genruntimeconfig.cache
 C:\Users\stive\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\obj\Debug\net10.0-windows\ref\InvertekDrive-RTU-UI.dll
-C:\Users\stive\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\bin\Debug\net10.0-windows\CommunityToolkit.Mvvm.dll
 C:\Users\stive\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\bin\Debug\net10.0-windows\Modbus.dll
 C:\Users\stive\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\bin\Debug\net10.0-windows\System.IO.Ports.dll
 C:\Users\stive\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\bin\Debug\net10.0-windows\runtimes\android-arm\native\libSystem.IO.Ports.Native.so
