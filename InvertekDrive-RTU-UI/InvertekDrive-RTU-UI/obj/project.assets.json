@@ -1745,23 +1745,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\stive\\.nuget\\packages\\": {},
+    "C:\\Users\\Stiven\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\stive\\Documents\\VS_Projects\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI.csproj",
+      "projectUniqueName": "C:\\Users\\Stiven\\Documents\\VS_Projects\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI.csproj",
       "projectName": "InvertekDrive-RTU-UI",
-      "projectPath": "C:\\Users\\stive\\Documents\\VS_Projects\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI.csproj",
-      "packagesPath": "C:\\Users\\stive\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\stive\\Documents\\VS_Projects\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\obj\\",
+      "projectPath": "C:\\Users\\Stiven\\Documents\\VS_Projects\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI.csproj",
+      "packagesPath": "C:\\Users\\Stiven\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Stiven\\Documents\\VS_Projects\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\InvertekDrive-RTU-UI\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\stive\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Stiven\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],

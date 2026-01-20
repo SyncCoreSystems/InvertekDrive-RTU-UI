@@ -12,15 +12,17 @@ public class MainViewModel : ViewModelBase
 {
     #region Relay Commands
 
-    public ICommand ConnectModbusDevice { get; }
+    public RelayCommand ConnectModbusDevice { get; }
     public RelayCommand DisconnectModbusDevice { get; }
-    public ICommand UpdateLocalPorts { get; }
+    public RelayCommand UpdateLocalPorts { get; }
 
     #endregion
 
     public MainViewModel()
     {
-        UpdateLocalPorts = new RelayCommand(_ => GetPorts());
+        ConnectModbusDevice = new RelayCommand(_ => ConnectSerialModbusDevice(), _ => !ModbusConnected);
+        DisconnectModbusDevice = new RelayCommand(_ => DisconnecSerialModbusDevice(), _ => ModbusConnected);
+        UpdateLocalPorts = new RelayCommand(_ => GetPorts(), _ => !ModbusConnected);
     }
 
     #region Com Ports, BaudRate and Slave ID Collections
@@ -72,7 +74,9 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public string ModbusConnectionStatus => ModbusService.IsConnected ? "Connected" : "Disconnected";
+    public string ModbusConnectionStatus => ModbusConnected ? "Connected" : "Disconnected";
+
+    // If modbus connection is successfully the ModbusConnected var will be true
     private bool _modbusConnected;
 
     public bool ModbusConnected
@@ -100,7 +104,18 @@ public class MainViewModel : ViewModelBase
         bool connected = ModbusService.ConnectModbusMaster(SelectedComPort, SelectedBaudRate, 8, "None", 1);
         if (connected)
             ModbusConnected = true;
-
     }
+
+    #endregion
+
+    #region Disconnect Modbus Device
+
+    private void DisconnecSerialModbusDevice()
+    {
+        bool disconnected = ModbusService.DisconnectModbusMaster();
+        if (disconnected)
+            ModbusConnected = false;
+    }
+
     #endregion
 }

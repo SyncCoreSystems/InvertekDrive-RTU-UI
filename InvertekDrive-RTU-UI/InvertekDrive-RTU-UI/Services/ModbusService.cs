@@ -26,13 +26,6 @@ public static class ModbusService
 
     #endregion
 
-    #region Is Connected Store State
-
-    public static bool
-        IsConnected { get; private set; }
-
-    #endregion
-
     #region Connect Modbus Serial Master
 
     public static bool ConnectModbusMaster(
@@ -43,38 +36,33 @@ public static class ModbusService
         int stopBits
     )
     {
-        if (!IsConnected)
+        try
         {
-            try
+            SerialStation = new SerialPort(serialPort);
+            SerialStation.BaudRate = baudRate;
+            SerialStation.DataBits = dataBits;
+            SerialStation.Parity = parity switch
             {
-                SerialStation = new SerialPort(serialPort);
-                SerialStation.BaudRate = baudRate;
-                SerialStation.DataBits = dataBits;
-                SerialStation.Parity = parity switch
-                {
-                    "None" => Parity.None,
-                    "Even" => Parity.Even,
-                    "Odd" => Parity.Odd,
-                    _ => Parity.None
-                };
-                SerialStation.StopBits = stopBits switch
-                {
-                    0 => StopBits.None,
-                    1 => StopBits.One,
-                    2 => StopBits.Two,
-                    _ => StopBits.One
-                };
-                SerialStation.Open();
-                Adapter = new SerialPortAdapter(SerialStation);
-                Master = ModbusSerialMaster.CreateRtu(Adapter);
-
-                IsConnected = true;
-            }
-            catch (Exception e)
+                "None" => Parity.None,
+                "Even" => Parity.Even,
+                "Odd" => Parity.Odd,
+                _ => Parity.None
+            };
+            SerialStation.StopBits = stopBits switch
             {
-                Debug.WriteLine(e);
-                return false;
-            }
+                0 => StopBits.None,
+                1 => StopBits.One,
+                2 => StopBits.Two,
+                _ => StopBits.One
+            };
+            SerialStation.Open();
+            Adapter = new SerialPortAdapter(SerialStation);
+            Master = ModbusSerialMaster.CreateRtu(Adapter);
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return false;
         }
 
         return true;
@@ -86,27 +74,23 @@ public static class ModbusService
 
     public static bool DisconnectModbusMaster()
     {
-        if (IsConnected)
+        try
         {
-            try
-            {
-                Master?.Dispose();
-                Adapter?.Dispose();
-                SerialStation?.Close();
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-                return false;
-            }
+            Master?.Dispose();
+            Adapter?.Dispose();
+            SerialStation?.Close();
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return false;
         }
 
-        IsConnected = false;
         return true;
     }
 
     #endregion
-    
+
     #region Get Com Ports from local PC
 
     public static void GetComPorts(ObservableCollection<string> ports)
@@ -114,9 +98,10 @@ public static class ModbusService
         string[] getPorts = SerialPort.GetPortNames();
         foreach (string port in getPorts)
         {
-            if  (!ports.Contains(port))
+            if (!ports.Contains(port))
                 ports.Add(port);
         }
     }
+
     #endregion
 }

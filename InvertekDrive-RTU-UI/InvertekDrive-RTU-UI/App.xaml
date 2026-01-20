@@ -4,6 +4,109 @@
              xmlns:local="clr-namespace:InvertekDrive_RTU_UI"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <!-- GroupBox Style -->
+        <Style TargetType="GroupBox">
+            <Setter Property="Margin" Value="10,5" />
+            <Setter Property="Padding" Value="15" />
+            <Setter Property="BorderBrush" Value="#4A90E2" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#4A90E2" />
+        </Style>
+
+        <!-- Button Base Style -->
+        <Style x:Key="BaseButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="15,8" />
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" BlurRadius="4" Opacity="0.3" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.9" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Control Button Styles -->
+        <Style x:Key="StartButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="Background" Value="#27AE60" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Padding" Value="20,12" />
+        </Style>
+
+        <Style x:Key="StopButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="Background" Value="#E74C3C" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Padding" Value="20,12" />
+        </Style>
+
+        <Style x:Key="ResetButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="Background" Value="#F39C12" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style x:Key="PortRefresh" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <!-- <Setter Property="Background" Value="#3498DB"/> -->
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="MinWidth" Value="120" />
+        </Style>
+
+        <Style x:Key="ConnectButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="Background" Value="#27AE60" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="MinWidth" Value="120" />
+        </Style>
+
+        <Style x:Key="WriteButton" TargetType="Button" BasedOn="{StaticResource BaseButtonStyle}">
+            <Setter Property="Background" Value="#3498DB" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="10,6" />
+        </Style>
+        
+        <!-- Status Card Style -->
+        <Style x:Key="StatusCard" TargetType="Border">
+            <Setter Property="Background" Value="#F8F9FA"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="BorderThickness" Value="0,0,0,4"/>
+            <Setter Property="BorderBrush" Value="#4A90E2"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="#CCC"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="15,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Height" Value="33"/>
+            
+        </Style>
+
+        <!-- Label Style -->
+        <Style TargetType="Label">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="#333"/>
+        </Style>
     </Application.Resources>
 </Application>
