@@ -166,7 +166,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Control Panel -->
-            <GroupBox Grid.Column="0" Header="Drive Control">
+            <GroupBox Grid.Column="0" Header="Drive Control" >
                 <StackPanel>
                     <!-- Control Buttons -->
                     <Grid>

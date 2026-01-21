@@ -21,7 +21,7 @@ public class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         ConnectModbusDevice = new RelayCommand(_ => ConnectSerialModbusDevice(), _ => !ModbusConnected);
-        DisconnectModbusDevice = new RelayCommand(_ => DisconnecSerialModbusDevice(), _ => ModbusConnected);
+        DisconnectModbusDevice = new RelayCommand(_ => DisconnectSerialModbusDevice(), _ => ModbusConnected);
         UpdateLocalPorts = new RelayCommand(_ => GetPorts(), _ => !ModbusConnected);
     }
 
@@ -87,6 +87,9 @@ public class MainViewModel : ViewModelBase
             _modbusConnected = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(ModbusConnectionStatus));
+            ConnectModbusDevice.RaiseCanExecuteChanged();
+            DisconnectModbusDevice.RaiseCanExecuteChanged();
+            UpdateLocalPorts.RaiseCanExecuteChanged();
         }
     }
 
@@ -110,7 +113,7 @@ public class MainViewModel : ViewModelBase
 
     #region Disconnect Modbus Device
 
-    private void DisconnecSerialModbusDevice()
+    private void DisconnectSerialModbusDevice()
     {
         bool disconnected = ModbusService.DisconnectModbusMaster();
         if (disconnected)
