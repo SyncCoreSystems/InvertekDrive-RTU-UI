@@ -5,11 +5,18 @@ using System.Windows.Input;
 using InvertekDrive_RTU_UI.Commands;
 using InvertekDrive_RTU_UI.Model;
 using InvertekDrive_RTU_UI.Services;
+using Modbus.Device;
 
 namespace InvertekDrive_RTU_UI.ViewModel;
 
 public class MainViewModel : ViewModelBase
 {
+    #region Accessors
+
+    private IModbusSerialMaster MasterAccess => ModbusService.Master;
+
+    #endregion
+
     #region Relay Commands
 
     public RelayCommand ConnectModbusDevice { get; }
@@ -27,12 +34,12 @@ public class MainViewModel : ViewModelBase
 
     #region Com Ports, BaudRate and Slave ID Collections
 
-    private readonly ModbusStation _modbusStation = new();
+    private readonly ModbusModel _modbusModel = new();
 
     public ObservableCollection<string> ComPorts
     {
-        get => _modbusStation.ComPort;
-        set => _modbusStation.ComPort = value;
+        get => _modbusModel.ComPort;
+        set => _modbusModel.ComPort = value;
     }
 
     private string _selectedComPort;
@@ -48,7 +55,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public ObservableCollection<int> BaudRate => _modbusStation.BaudRate;
+    public ObservableCollection<int> BaudRate => _modbusModel.BaudRate;
 
     private int _selectedBaudRate;
 
@@ -65,26 +72,25 @@ public class MainViewModel : ViewModelBase
 
     public byte SelectedSlaveId
     {
-        get => _modbusStation.SlaveId;
+        get => _modbusModel.SlaveId;
         set
         {
-            _modbusStation.SlaveId = value;
+            _modbusModel.SlaveId = value;
             OnPropertyChanged();
             Debug.WriteLine(SelectedSlaveId);
         }
     }
 
-    public string ModbusConnectionStatus => ModbusConnected ? "Connected" : "Disconnected";
+    public string ModbusConnectionStatus => ModbusService.IsConnected ? "Connected" : "Disconnected";
 
     // If modbus connection is successfully the ModbusConnected var will be true
-    private bool _modbusConnected;
 
     public bool ModbusConnected
     {
-        get => _modbusConnected;
+        get => ModbusService.IsConnected;
         set
         {
-            _modbusConnected = value;
+            ModbusService.IsConnected = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(ModbusConnectionStatus));
             ConnectModbusDevice.RaiseCanExecuteChanged();
@@ -104,7 +110,7 @@ public class MainViewModel : ViewModelBase
 
     private void ConnectSerialModbusDevice()
     {
-        bool connected = ModbusService.ConnectModbusMaster(SelectedComPort, SelectedBaudRate, 8, "None", 1);
+        bool connected = ModbusService.ConnectModbusMaster(_selectedComPort, SelectedBaudRate, 8, "None", 1);
         if (connected)
             ModbusConnected = true;
     }
@@ -120,5 +126,25 @@ public class MainViewModel : ViewModelBase
             ModbusConnected = false;
     }
 
+    #endregion
+
+    #region Run or Stop Drive
+
+    public void RunDrive()
+    {
+        DriveService.Run(MasterAccess, _modbusModel.SlaveId, 1, 1);
+    }
+    
+    public void StopDrive()
+    {
+        DriveService.Stop(MasterAccess, _modbusModel.SlaveId, 1, 1);
+    }
+
+    #endregion
+    
+    #region Read Drive Parameters
+    
+    
+    
     #endregion
 }

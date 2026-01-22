@@ -9,6 +9,8 @@ namespace InvertekDrive_RTU_UI.Services;
 
 public static class ModbusService
 {
+    public static bool IsConnected {get;  set;} // If Modbus is connected successfully, the var will be true
+    
     #region Modbus Master Access
 
     public static SerialPortAdapter? Adapter { get; private set; }
@@ -16,6 +18,7 @@ public static class ModbusService
     public static SerialPort? SerialStation { get; private set; }
 
     #endregion
+    
 
     #region Check if Master is not null
 
@@ -28,8 +31,7 @@ public static class ModbusService
 
     #region Connect Modbus Serial Master
 
-    public static bool ConnectModbusMaster(
-        string serialPort,
+    public static bool ConnectModbusMaster(string selectedPort,
         int baudRate,
         int dataBits,
         string parity,
@@ -38,7 +40,7 @@ public static class ModbusService
     {
         try
         {
-            SerialStation = new SerialPort(serialPort);
+            SerialStation = new SerialPort(selectedPort);
             SerialStation.BaudRate = baudRate;
             SerialStation.DataBits = dataBits;
             SerialStation.Parity = parity switch

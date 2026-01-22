@@ -3,7 +3,7 @@ using System.IO.Ports;
 
 namespace InvertekDrive_RTU_UI.Model;
 
-public class ModbusStation
+public class ModbusModel
 {
     public ObservableCollection<string> ComPort { get; set; } = new();
 
