@@ -33,9 +33,9 @@ public static class ModbusService
 
     public static bool ConnectModbusMaster(string selectedPort,
         int baudRate,
-        int dataBits,
+        ushort dataBits,
         string parity,
-        int stopBits
+        ushort stopBits
     )
     {
         try

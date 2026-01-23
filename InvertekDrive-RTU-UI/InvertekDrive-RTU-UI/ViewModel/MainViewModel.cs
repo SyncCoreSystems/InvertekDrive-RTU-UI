@@ -110,7 +110,13 @@ public class MainViewModel : ViewModelBase
 
     private void ConnectSerialModbusDevice()
     {
-        bool connected = ModbusService.ConnectModbusMaster(_selectedComPort, SelectedBaudRate, 8, "None", 1);
+        bool connected = ModbusService.ConnectModbusMaster(
+            _selectedComPort,
+            SelectedBaudRate,
+            (ushort)DataBits.Eight,
+            nameof(Parity.None),
+            (ushort)StopBits.One);
+        
         if (connected)
             ModbusConnected = true;
     }
@@ -132,12 +138,12 @@ public class MainViewModel : ViewModelBase
 
     public void RunDrive()
     {
-        DriveService.Run(MasterAccess, _modbusModel.SlaveId, 1, 1);
+        DriveService.Run(MasterAccess, _modbusModel.SlaveId, (ushort)MasterAddresses.ControlWord, (ushort)DriveCommands.Run);
     }
     
     public void StopDrive()
     {
-        DriveService.Stop(MasterAccess, _modbusModel.SlaveId, 1, 1);
+        DriveService.Stop(MasterAccess, _modbusModel.SlaveId, (ushort)MasterAddresses.ControlWord, (ushort)DriveCommands.Stop);
     }
 
     #endregion
