@@ -11,9 +11,10 @@ namespace InvertekDrive_RTU_UI.ViewModel;
 
 public class MainViewModel : ViewModelBase
 {
-    #region Accessors
+    #region Class Instances
 
-    private IModbusSerialMaster MasterAccess => ModbusService.Master;
+    private readonly ModbusModel _modbusModel = new();
+    private readonly DriveModel _driveModel = new();
 
     #endregion
 
@@ -22,19 +23,17 @@ public class MainViewModel : ViewModelBase
     public RelayCommand ConnectModbusDevice { get; }
     public RelayCommand DisconnectModbusDevice { get; }
     public RelayCommand UpdateLocalPorts { get; }
+    public RelayCommand ChangeToRunDrive { get; }
+    public RelayCommand ChangeToStopDrive { get; }
+    public RelayCommand WriteAcceleration { get; }
+    public RelayCommand WriteDeceleration { get; }
+    public RelayCommand WriteFrequency { get; }
+    public RelayCommand WriteMinFrequency { get; }
+    public RelayCommand WriteMaxFrequency { get; }
 
     #endregion
 
-    public MainViewModel()
-    {
-        ConnectModbusDevice = new RelayCommand(_ => ConnectSerialModbusDevice(), _ => !ModbusConnected);
-        DisconnectModbusDevice = new RelayCommand(_ => DisconnectSerialModbusDevice(), _ => ModbusConnected);
-        UpdateLocalPorts = new RelayCommand(_ => GetPorts(), _ => !ModbusConnected);
-    }
-
-    #region Com Ports, BaudRate and Slave ID Collections
-
-    private readonly ModbusModel _modbusModel = new();
+    #region Collections
 
     public ObservableCollection<string> ComPorts
     {
@@ -42,6 +41,13 @@ public class MainViewModel : ViewModelBase
         set => _modbusModel.ComPort = value;
     }
 
+    public ObservableCollection<int> BaudRate => _modbusModel.BaudRate;
+
+    #endregion
+
+    #region Properties
+
+    // Select Com Port from ComboBox
     private string _selectedComPort;
 
     public string SelectedComPort
@@ -51,12 +57,10 @@ public class MainViewModel : ViewModelBase
         {
             _selectedComPort = value;
             OnPropertyChanged();
-            Debug.WriteLine(SelectedComPort);
         }
     }
 
-    public ObservableCollection<int> BaudRate => _modbusModel.BaudRate;
-
+    // Select BaudRate from ComboBox
     private int _selectedBaudRate;
 
     public int SelectedBaudRate
@@ -66,10 +70,10 @@ public class MainViewModel : ViewModelBase
         {
             _selectedBaudRate = value;
             OnPropertyChanged();
-            Debug.WriteLine(SelectedBaudRate);
         }
     }
 
+    // Select SlaveId from TextBox
     public byte SelectedSlaveId
     {
         get => _modbusModel.SlaveId;
@@ -77,13 +81,8 @@ public class MainViewModel : ViewModelBase
         {
             _modbusModel.SlaveId = value;
             OnPropertyChanged();
-            Debug.WriteLine(SelectedSlaveId);
         }
     }
-
-    public string ModbusConnectionStatus => ModbusService.IsConnected ? "Connected" : "Disconnected";
-
-    // If modbus connection is successfully the ModbusConnected var will be true
 
     public bool ModbusConnected
     {
@@ -97,7 +96,61 @@ public class MainViewModel : ViewModelBase
             DisconnectModbusDevice.RaiseCanExecuteChanged();
             UpdateLocalPorts.RaiseCanExecuteChanged();
         }
+        
     }
+
+    public bool DriveRunning
+    {
+        get => _driveModel.IsRunning;
+        set
+        {
+            _driveModel.IsRunning = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(DriveStatus));
+            ChangeToRunDrive.RaiseCanExecuteChanged();
+            ChangeToStopDrive.RaiseCanExecuteChanged();
+        }
+    }
+
+    public ushort OutFrequency
+    {
+        get => _driveModel.OutputFrequency;
+        set
+        {
+            _driveModel.OutputFrequency = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    public ushort OutCurrent
+    {
+        get => _driveModel.OutputCurrent;
+        set
+        {
+            _driveModel.OutputCurrent = value;
+            OnPropertyChanged();
+        }
+    }
+    #endregion
+
+    #region String Status Indicators
+
+    public string ModbusConnectionStatus => ModbusConnected ? "Connected" : "Disconnected";
+    public string DriveStatus => DriveRunning ? "Running" : "Stopped";
+
+    #endregion
+
+
+    public MainViewModel()
+    {
+        ConnectModbusDevice = new RelayCommand(_ => ConnectSerialModbusDevice(), _ => !ModbusConnected);
+        DisconnectModbusDevice = new RelayCommand(_ => DisconnectSerialModbusDevice(), _ => ModbusConnected);
+        UpdateLocalPorts = new RelayCommand(_ => GetPorts(), _ => !ModbusConnected);
+        ChangeToRunDrive = new RelayCommand(_ => RunDrive(), _ => !DriveRunning);
+        ChangeToStopDrive = new RelayCommand(_ => StopDrive(), _ => DriveRunning);
+    }
+
+    #region Obtain Com Ports From Local PC
 
     public void GetPorts()
     {
@@ -106,25 +159,23 @@ public class MainViewModel : ViewModelBase
 
     #endregion
 
-    #region Connect Modbus Device
+    #region Connect and Disconnect Modbus Device
 
+    // Connect
     private void ConnectSerialModbusDevice()
     {
         bool connected = ModbusService.ConnectModbusMaster(
             _selectedComPort,
             SelectedBaudRate,
-            (ushort)DataBits.Eight,
+            (Int32)DataBits.Eight,
             nameof(Parity.None),
-            (ushort)StopBits.One);
-        
+            (int)StopBits.One);
+
         if (connected)
             ModbusConnected = true;
     }
 
-    #endregion
-
-    #region Disconnect Modbus Device
-
+    // Disconnect
     private void DisconnectSerialModbusDevice()
     {
         bool disconnected = ModbusService.DisconnectModbusMaster();
@@ -136,21 +187,43 @@ public class MainViewModel : ViewModelBase
 
     #region Run or Stop Drive
 
-    public void RunDrive()
+    // Run Method
+    private void RunDrive()
     {
-        DriveService.Run(MasterAccess, _modbusModel.SlaveId, (ushort)MasterAddresses.ControlWord, (ushort)DriveCommands.Run);
+        bool driveRun = DriveService.Run(
+            ModbusService.Master,
+            SelectedSlaveId,
+            (ushort)MasterAddresses.ControlWord,
+            (ushort)DriveCommands.Run);
+
+        if (driveRun)
+            DriveRunning = true;
     }
-    
-    public void StopDrive()
+
+    // Stop Method
+    private void StopDrive()
     {
-        DriveService.Stop(MasterAccess, _modbusModel.SlaveId, (ushort)MasterAddresses.ControlWord, (ushort)DriveCommands.Stop);
+        bool driveStop = DriveService.Stop(
+            ModbusService.Master,
+            SelectedSlaveId,
+            (ushort)MasterAddresses.ControlWord,
+            (ushort)DriveCommands.Stop);
+
+        if (driveStop)
+            DriveRunning = false;
     }
 
     #endregion
-    
-    #region Read Drive Parameters
-    
-    
-    
+
+    #region Read Output Frequency and Output Current
+
+    private void ReadOutVoltCurrent()
+    {
+        DriveService.ReadVoltCurrent(
+            ModbusService.Master,
+            SelectedSlaveId,
+            (ushort)MasterAddresses.OutputFrequency,
+            (ushort)RegistersToRead.Three);
+    }
     #endregion
 }

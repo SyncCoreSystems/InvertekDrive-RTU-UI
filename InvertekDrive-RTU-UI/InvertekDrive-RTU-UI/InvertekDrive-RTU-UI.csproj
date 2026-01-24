@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
@@ -15,8 +15,9 @@
       <PackageReference Include="System.IO.Ports" Version="10.0.2" />
     </ItemGroup>
 
-    <ItemGroup>
+<ItemGroup>
       <Folder Include="Assets\Icons\" />
+      <Folder Include="Assets\Styles\" />
     </ItemGroup>
 
     <ItemGroup>

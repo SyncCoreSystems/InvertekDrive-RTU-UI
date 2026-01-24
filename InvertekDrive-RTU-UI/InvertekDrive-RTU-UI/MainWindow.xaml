@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:styles="clr-namespace:InvertekDrive_RTU_UI.Assets.Styles"
         mc:Ignorable="d"
         Title="Invertek Drive Controller - Modbus RTU"
         Icon="Assets/Icons/electric-motor.ico"
@@ -132,18 +133,20 @@
                 <!-- Status Indicator -->
                 <StackPanel Orientation="Horizontal" Margin="10,15,0,5">
                     <Ellipse x:Name="statusIndicator" Width="14" Height="14"
-                             Fill="#27AE60" Margin="0,0,10,0">
+                             Fill="{Binding DriveRunning, Converter={StaticResource BoolToColorConverter}}"
+                             Margin="0,0,10,0">
                         <Ellipse.Effect>
                             <DropShadowEffect Color="#27AE60" ShadowDepth="0" BlurRadius="8" />
                         </Ellipse.Effect>
                     </Ellipse>
                     <TextBlock FontSize="14" FontWeight="Normal">
-                        <Run Text="Status:" Foreground="#333" />
-                        <Run x:Name="txtDriveStatus" Text="Running Forward" FontWeight="SemiBold" Foreground="#2C3E50" />
+                        <Run Text="Drive Status:" Foreground="#333" />
+                        <Run x:Name="txtDriveStatus" Text="{Binding DriveStatus, Mode=OneWay}" FontWeight="SemiBold" Foreground="#2C3E50" />
                     </TextBlock>
                     <!-- Modbus Status Indicator -->
                     <Ellipse x:Name="modbusStatusIndicator" Width="14" Height="14"
-                             Fill="#f5c125" Margin="30,0,10,0">
+                             Fill="{Binding ModbusConnected, Converter={StaticResource BoolToColorConverter}}"
+                             Margin="50,0,10,0">
                         <Ellipse.Effect>
                             <DropShadowEffect Color="#27AE60" ShadowDepth="0" BlurRadius="8" />
                         </Ellipse.Effect>
@@ -181,9 +184,11 @@
                         </Grid.RowDefinitions>
 
                         <Button Grid.Row="0" Grid.Column="0" x:Name="btnStart"
-                                Content="▶ START" Style="{StaticResource StartButton}" />
+                                Content="▶ START" Style="{StaticResource StartButton}"
+                                Command="{Binding ChangeToRunDrive}"/>
                         <Button Grid.Row="0" Grid.Column="1" x:Name="btnStop"
-                                Content="■ STOP" Style="{StaticResource StopButton}" />
+                                Content="■ STOP" Style="{StaticResource StopButton}"
+                                Command="{Binding ChangeToStopDrive}"/>
 
                         <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
                                 x:Name="btnReset" Content="⟳ RESET FAULT"

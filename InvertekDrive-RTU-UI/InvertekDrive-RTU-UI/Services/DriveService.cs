@@ -1,33 +1,61 @@
 ﻿using System.Diagnostics;
+using InvertekDrive_RTU_UI.Model;
 using Modbus.Device;
 
 namespace InvertekDrive_RTU_UI.Services;
 
 public static class DriveService
 {
-    #region General Status Vars
+    #region Parameters read array
 
-    public static bool IsRunning { get; private set; }
+    public static ushort[] ParametersRead { get; private set; }
 
     #endregion
 
-    public static void Run(IModbusSerialMaster master, byte slaveAddress, ushort registerAddress, ushort value)
+    public static bool Run(
+        IModbusSerialMaster master,
+        byte slaveAddress,
+        ushort registerAddress,
+        ushort value)
     {
-        master.WriteSingleRegister(slaveAddress, registerAddress, value);
-
-        Debug.WriteLine("DriveService.Run()");
+        try
+        {
+            master.WriteSingleRegister(slaveAddress, registerAddress, value);
+            Debug.WriteLine("DriveService.Run()");
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return false;
+        }
     }
 
-    public static void Stop(IModbusSerialMaster master, byte slaveAddress, ushort registerAddress, ushort value)
+    public static bool Stop(
+        IModbusSerialMaster master,
+        byte slaveAddress,
+        ushort registerAddress,
+        ushort value)
     {
-        master.WriteSingleRegister(slaveAddress, registerAddress, value);
-
-        Debug.WriteLine("DriveService.Stop()");
+        try
+        {
+            master.WriteSingleRegister(slaveAddress, registerAddress, value);
+            Debug.WriteLine("DriveService.Stop()");
+            return true;
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            return false;
+        }
     }
 
-    public static void ReadParameters(IModbusSerialMaster master, byte slaveAddress, ushort startAddress,
+    public static ushort[] ReadVoltCurrent(
+        IModbusSerialMaster master
+        , byte slaveAddress,
+        ushort startAddress,
         ushort numberOfParameters)
     {
-        ushort[] values = master.ReadHoldingRegisters(slaveAddress, startAddress, numberOfParameters);
+        return master.ReadHoldingRegisters(slaveAddress, startAddress, numberOfParameters);
     }
 }

@@ -84,3 +84,4 @@ C:\Users\Stiven\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\
 C:\Users\Stiven\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\obj\Debug\net10.0-windows\InvertekDrive-RTU-UI.pdb
 C:\Users\Stiven\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\obj\Debug\net10.0-windows\InvertekDrive-RTU-UI.genruntimeconfig.cache
 C:\Users\Stiven\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\obj\Debug\net10.0-windows\ref\InvertekDrive-RTU-UI.dll
+C:\Users\Stiven\Documents\VS_Projects\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\InvertekDrive-RTU-UI\obj\Debug\net10.0-windows\GeneratedInternalTypeHelper.g.cs

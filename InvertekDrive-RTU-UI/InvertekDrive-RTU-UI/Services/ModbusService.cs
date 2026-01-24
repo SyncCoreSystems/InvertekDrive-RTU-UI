@@ -33,9 +33,9 @@ public static class ModbusService
 
     public static bool ConnectModbusMaster(string selectedPort,
         int baudRate,
-        ushort dataBits,
+        Int32 dataBits,
         string parity,
-        ushort stopBits
+        int stopBits
     )
     {
         try
@@ -60,14 +60,26 @@ public static class ModbusService
             SerialStation.Open();
             Adapter = new SerialPortAdapter(SerialStation);
             Master = ModbusSerialMaster.CreateRtu(Adapter);
+            
+            Debug.WriteLine(selectedPort);
+            Debug.WriteLine(baudRate);
+            Debug.WriteLine(dataBits);
+            Debug.WriteLine(parity);
+            Debug.WriteLine(stopBits);
+            
+            return true;
         }
         catch (Exception e)
         {
             Debug.WriteLine(e);
+            Debug.WriteLine(selectedPort);
+            Debug.WriteLine(baudRate);
+            Debug.WriteLine(dataBits);
+            Debug.WriteLine(parity);
+            Debug.WriteLine(stopBits);
             return false;
         }
 
-        return true;
     }
 
     #endregion
