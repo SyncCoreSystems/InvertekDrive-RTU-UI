@@ -8,6 +8,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UseWPF>true</UseWPF>
+        <ApplicationIcon>Assets\Icons\motor.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -21,10 +22,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="Assets\Icons\icons8-electric-motor-70.ico" />
-      <Resource Include="Assets\Icons\electric-motor.ico" />
+<!--      <None Remove="Assets\Icons\icons8-electric-motor-70.ico" />-->
+<!--      <Resource Include="Assets\Icons\electric-motor.ico" />-->
       <None Remove="Assets\Icons\horizontallogo.png" />
       <Resource Include="Assets\Icons\horizontallogo.png" />
+<!--      <None Remove="Assets\Icons\motor.ico" />-->
+<!--      <Resource Include="Assets\Icons\motor.ico" />-->
     </ItemGroup>
 
 </Project>

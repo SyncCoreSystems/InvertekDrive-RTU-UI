@@ -6,7 +6,6 @@
         xmlns:styles="clr-namespace:InvertekDrive_RTU_UI.Assets.Styles"
         mc:Ignorable="d"
         Title="Invertek Drive Controller - Modbus RTU"
-        Icon="Assets/Icons/electric-motor.ico"
         Height="800" Width="1000"
         RenderOptions.BitmapScalingMode="HighQuality"
         SizeToContent="WidthAndHeight"
