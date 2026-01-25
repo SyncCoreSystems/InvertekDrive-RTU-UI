@@ -1,9 +1,4 @@
-using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Windows;
 using InvertekDrive_RTU_UI.Commands;
 using InvertekDrive_RTU_UI.Helpers;
@@ -18,38 +13,37 @@ public class MainViewModel : ViewModelBase
 
     private CancellationTokenSource? _pollingCts;
 
-    private async void StartPolling()
+    private async Task StartPolling()
     {
         try
         {
             if (_pollingCts != null)
                 return;
 
+
             _pollingCts = new CancellationTokenSource();
 
-            
-                while (!_pollingCts.Token.IsCancellationRequested)
-                {
-                    await ReadDcBusVoltage();
-                    await ReadFrequencyAndCurrent();
-                    await ReadDriveStatus();
-                    await Task.Delay(400, _pollingCts.Token);
-                }
-            
+
+            while (!_pollingCts.Token.IsCancellationRequested)
+            {
+                await ReadDcBusVoltage();
+                await ReadFrequencyAndCurrent();
+                await ReadDriveStatus();
+                await Task.Delay(400, _pollingCts.Token);
+            }
         }
         catch (TimeoutException e)
         {
-            MessageBox.Show($"Check device connection. {e.Message}");
+            MessageBox.Show($"Error: A timeout occurred during the operation.  {e.Message}");
             StopPolling();
             DisconnectSerialModbusDevice();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            MessageBox.Show($"The serial device has been disconnected. {e.Message}");
+            MessageBox.Show($"{ex.Message}");
             StopPolling();
             DisconnectSerialModbusDevice();
         }
-        
     }
 
     // Stop Polling
@@ -78,8 +72,8 @@ public class MainViewModel : ViewModelBase
     public RelayCommand ChangeToStopDrive { get; }
     public RelayCommand WriteAcceleration { get; }
     public RelayCommand WriteDeceleration { get; }
-    public RelayCommand WriteMinFrequency { get; }
-    public RelayCommand WriteMaxFrequency { get; }
+    public RelayCommand WriteMinSpeed { get; }
+    public RelayCommand WriteMaxSpeed { get; }
     public RelayCommand WriteMotorRatedVolt { get; }
     public RelayCommand WriteMotorRatedCurrent { get; }
     public RelayCommand WriteMotorRatedFrequency { get; }
@@ -104,27 +98,23 @@ public class MainViewModel : ViewModelBase
     #region Modbus Properties
 
     // Select Com Port from ComboBox
-    private string _selectedComPort;
-
     public string SelectedComPort
     {
-        get => _selectedComPort;
+        get => field;
         set
         {
-            _selectedComPort = value;
+            field = value;
             OnPropertyChanged();
         }
     }
 
     // Select BaudRate from ComboBox
-    private int _selectedBaudRate;
-
     public int SelectedBaudRate
     {
-        get => _selectedBaudRate;
+        get => field;
         set
         {
-            _selectedBaudRate = value;
+            field = value;
             OnPropertyChanged();
         }
     }
@@ -156,11 +146,39 @@ public class MainViewModel : ViewModelBase
             UpdateLocalPorts.RaiseCanExecuteChanged();
 
             if (value)
-                StartPolling();
+                _ = StartPolling();
             else
                 StopPolling();
         }
     }
+
+    // Check if master is not null
+    private bool MasterIsNotNull
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region Slider Control
+
+    public int SliderMaxValue
+    {
+        get => field;
+        set
+        {
+            field = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(MidSliderValue));
+        }
+    }
+
+    public int MidSliderValue => SliderMaxValue / 2;
 
     #endregion
 
@@ -175,7 +193,8 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public double CurrentRpm => OutFrequency * 60;
+    // RPM = outHz * RatedHzMotor - Displayed in Current Speed
+    public double CurrentRpm => OutFrequency * MotorRatedFrequencyValue;
 
     public double OutCurrent
     {
@@ -228,7 +247,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public int MaxFrequencyValue
+    public double MaxSpeedValue
     {
         get => _driveModel.MaxFrequency;
         set
@@ -238,7 +257,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public double MinFrequencyValue
+    public double MinSpeedValue
     {
         get => _driveModel.MinFrequency;
         set
@@ -248,7 +267,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public double MotorRatedVoltValue
+    public int MotorRatedVoltValue
     {
         get => _motorModel.RatedVoltage;
         set
@@ -268,7 +287,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public double MotorRatedFrequencyValue
+    public int MotorRatedFrequencyValue
     {
         get => _motorModel.RatedFrequency;
         set
@@ -329,7 +348,7 @@ public class MainViewModel : ViewModelBase
 
     #endregion
 
-// Constructor
+    // Constructor
     public MainViewModel()
     {
         ConnectModbusDevice = new RelayCommand(_ => ConnectSerialModbusDevice(), _ => !ModbusConnected);
@@ -339,8 +358,8 @@ public class MainViewModel : ViewModelBase
         ChangeToStopDrive = new RelayCommand(_ => StopDrive(), _ => RunningStatus);
         WriteAcceleration = new RelayCommand(_ => WriteAccelerationTime());
         WriteDeceleration = new RelayCommand(_ => WriteDecelerationTime());
-        WriteMaxFrequency = new RelayCommand(_ => WriteMaxFrequencyRange());
-        WriteMinFrequency = new RelayCommand(_ => WriteMinFrequencyRange());
+        WriteMaxSpeed = new RelayCommand(_ => WriteMaxSpeedLimit());
+        WriteMinSpeed = new RelayCommand(_ => WriteMinSpeedLimit());
         WriteMotorRatedVolt = new RelayCommand(_ => MotorRatedVoltage());
         WriteMotorRatedFrequency = new RelayCommand(_ => MotorRatedFrequency());
         WriteMotorRatedCurrent = new RelayCommand(_ => MotorRatedCurrent());
@@ -358,59 +377,123 @@ public class MainViewModel : ViewModelBase
 
     #region Connect and Disconnect Modbus Device
 
-// Connect
+    // Connect
     private void ConnectSerialModbusDevice()
     {
-        bool connected = ModbusService.ConnectModbusMaster(
-            _selectedComPort,
-            SelectedBaudRate,
-            (int)DataBits.Eight,
-            nameof(Parity.None),
-            (int)StopBits.One);
+        bool comNotNull = string.IsNullOrEmpty(SelectedComPort);
 
-        if (connected)
-            ModbusConnected = true;
+
+        bool baudRateNotNull = !BaudRate.Contains(SelectedBaudRate);
+
+        bool slaveAddressInvalid = SelectedSlaveId <= 0;
+
+        if (comNotNull)
+        {
+            MessageBox.Show("Please select COM Port");
+            return;
+        }
+
+        if (baudRateNotNull)
+        {
+            MessageBox.Show("Please select correct BaudRate");
+            return;
+        }
+
+        if (slaveAddressInvalid)
+        {
+            MessageBox.Show("Please enter the correct slave address. 1 - 32");
+            return;
+        }
+
+        if (!comNotNull && !baudRateNotNull)
+        {
+            try
+            {
+                bool connected = ModbusService.ConnectModbusMaster(
+                    SelectedComPort,
+                    SelectedBaudRate,
+                    (int)DataBits.Eight,
+                    nameof(Parity.None),
+                    (int)StopBits.One);
+
+                if (connected)
+                {
+                    ModbusConnected = true;
+                    MasterIsNotNull = ModbusService.MasterNotNull(ModbusService.Master);
+                }
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show($"Modbus TimeOut {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Serial error {ex.Message}");
+            }
+        }
     }
 
-// Disconnect
+    // Disconnect
     private void DisconnectSerialModbusDevice()
     {
         bool disconnected = ModbusService.DisconnectModbusMaster();
 
         if (disconnected)
+        {
             ModbusConnected = false;
+            MasterIsNotNull = ModbusService.MasterNotNull(ModbusService.Master);
+        }
     }
 
     #endregion
 
     #region Run or Stop Drive
 
-// Run Method
+    // Run Method
     private void RunDrive()
     {
-        try
+        const int zeroValue = 0;
+
+        if (!MasterIsNotNull)
         {
-            bool driveRun = DriveService.Run(
-                ModbusService.Master,
-                SelectedSlaveId,
-                (ushort)MasterAddresses.ControlWord,
-                (ushort)DriveCommands.Run);
+            MessageBox.Show(ModbusService.MasterNullIndicator);
+            return;
         }
-        catch (TimeoutException ex)
+
+        if (MaxSpeedValue != zeroValue && MotorRatedCurrentValue != zeroValue &&
+            MotorRatedFrequencyValue != zeroValue && MotorRatedVoltValue
+            != zeroValue)
         {
-            MessageBox.Show($"Modbus TimeOut {ex.Message}");
+            try
+            {
+                DriveService.WriteRegister(
+                    ModbusService.Master!,
+                    SelectedSlaveId,
+                    (ushort)MasterAddresses.ControlWord,
+                    (ushort)DriveCommands.Run);
+            }
+            catch (TimeoutException e)
+            {
+                MessageBox.Show($"Check device connection. {e.Message}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"The serial device has been disconnected. {ex.Message}");
+            }
         }
-        catch (Exception ex)
+        else
         {
-            MessageBox.Show($"Serial error {ex.Message}");
+            MessageBox.Show(
+                "Enter the Max Speed, Motor Rated Current, Motor Rated Voltage and Motor Rated Frequency." +
+                " This values can't be zero or negative.");
         }
     }
 
-// Stop Method
+    // Stop Method
     private void StopDrive()
     {
-        bool driveStop = DriveService.Stop(
-            ModbusService.Master,
+        DriveService.WriteRegister(
+            ModbusService.Master!,
             SelectedSlaveId,
             (ushort)MasterAddresses.ControlWord,
             (ushort)DriveCommands.Stop);
@@ -422,15 +505,14 @@ public class MainViewModel : ViewModelBase
 
     private async Task ReadFrequencyAndCurrent()
     {
-            ushort[] values = await DriveService.ReadFrequencyAndCurrent(
-                ModbusService.Master,
-                SelectedSlaveId,
-                (ushort)MasterAddresses.OutputFrequency,
-                (ushort)RegistersToRead.Three);
+        ushort[] values = await DriveService.ReadFrequencyAndCurrent(
+            ModbusService.Master!,
+            SelectedSlaveId,
+            (ushort)MasterAddresses.OutputFrequency,
+            (ushort)RegistersToRead.Three);
 
-            OutFrequency = values[0] / 10.0;
-            OutCurrent = values[1] / 10.0;
-        
+        OutFrequency = values[0] / 10.0;
+        OutCurrent = values[1] / 10.0;
     }
 
     #endregion
@@ -439,21 +521,12 @@ public class MainViewModel : ViewModelBase
 
     private async Task ReadDcBusVoltage()
     {
-        try
-        {
-            DcBusVolt = await DriveService.ReadDcBusVoltage(
-                ModbusService.Master,
-                SelectedSlaveId,
-                (ushort)MasterAddresses.DcBusVoltage,
-                (ushort)RegistersToRead.Two);
-        }
-        catch (Exception e)
-        {
-            Debug.WriteLine(e.Message);
-        }
+        DcBusVolt = await DriveService.ReadAsyncRegister(
+            ModbusService.Master!,
+            SelectedSlaveId,
+            (ushort)MasterAddresses.DcBusVoltage,
+            (ushort)RegistersToRead.Two);
     }
-
-// Start Polling
 
     #endregion
 
@@ -461,13 +534,31 @@ public class MainViewModel : ViewModelBase
 
     private void WriteSetPointFrequency()
     {
-        double setPointFrequency = SetFrequencyValue * 10.0;
+        if (!MasterIsNotNull)
+        {
+            MessageBox.Show(ModbusService.MasterNullIndicator);
+            return;
+        }
 
-        DriveService.WriteRegister(
-            ModbusService.Master,
-            SelectedSlaveId,
-            (ushort)MasterAddresses.FrequencySetPoint,
-            (ushort)setPointFrequency);
+        try
+        {
+            // Convert user input to raw value readable for drive
+            double setPointFrequency = SetFrequencyValue * DriveModel.RawValueFrequency;
+
+            DriveService.WriteRegister(
+                ModbusService.Master!,
+                SelectedSlaveId,
+                (ushort)MasterAddresses.FrequencySetPoint,
+                (ushort)setPointFrequency);
+        }
+        catch (TimeoutException e)
+        {
+            MessageBox.Show($"Error: A timeout occurred during the operation.  {e.Message}");
+        }
+        catch (Exception ex) // Catch any other unexpected exceptions
+        {
+            MessageBox.Show($"An unexpected error occurred:  {ex.Message}");
+        }
     }
 
     #endregion
@@ -476,21 +567,180 @@ public class MainViewModel : ViewModelBase
 
     private void WriteAccelerationTime()
     {
+        if (!MasterIsNotNull)
+        {
+            MessageBox.Show("Master is null.");
+            return;
+        }
+
         try
         {
-            DriveService.WriteRegister(
-                ModbusService.Master,
-                SelectedSlaveId,
-                (ushort)MasterAddresses.AccelerationTime,
-                (ushort)AccelerationTimeValue);
+            // Convert user input to raw value readable for drive
+            double accelerationTimeValue = AccelerationTimeValue * DriveModel.RawValueRampTime;
+
+            if (AccelerationTimeValue is >= DriveModel.MinRampTime and <= DriveModel.MaxRampTime)
+            {
+                DriveService.WriteRegister(
+                    ModbusService.Master!,
+                    SelectedSlaveId,
+                    (ushort)MasterAddresses.AccelerationTime,
+                    (ushort)accelerationTimeValue);
+            }
+            else
+            {
+                MessageBox.Show($"The acceleration ramp time value is out of range. Range is Min {DriveModel
+                    .MinRampTime}s - Max {DriveModel.MaxRampTime}s");
+            }
         }
-        catch (UnauthorizedAccessException ex)
+        catch (TimeoutException e)
         {
-            MessageBox.Show($"Error: Access denied to {ex.Message}");
+            MessageBox.Show($"Error: A timeout occurred during the operation.  {e.Message}");
         }
-        catch (IOException ex)
+        catch (Exception ex) // Catch any other unexpected exceptions
         {
-            MessageBox.Show($"Error: An I/O error occurred with {ex.Message}");
+            MessageBox.Show($"An unexpected error occurred:  {ex.Message}");
+        }
+    }
+
+    private void WriteDecelerationTime()
+    {
+        if (!MasterIsNotNull)
+        {
+            MessageBox.Show("Master is null.");
+            return;
+        }
+
+        try
+        {
+            // Convert user input to raw value readable for drive
+            double decelerationTimeValue = DecelerationTimeValue * DriveModel.RawValueRampTime;
+
+
+            if (DecelerationTimeValue is >= DriveModel.MinRampTime and <= DriveModel.MaxRampTime)
+            {
+                DriveService.WriteRegister(
+                    ModbusService.Master!,
+                    SelectedSlaveId,
+                    (ushort)MasterAddresses.DecelerationTime,
+                    (ushort)decelerationTimeValue);
+            }
+            else
+            {
+                MessageBox.Show($"The acceleration ramp time value is out of range. Range is Min {DriveModel
+                    .MinRampTime}s - Max {DriveModel.MaxRampTime}s");
+            }
+        }
+        catch (TimeoutException e)
+        {
+            MessageBox.Show($"Error: A timeout occurred during the operation.  {e.Message}");
+        }
+        catch (Exception ex) // Catch any other unexpected exceptions
+        {
+            MessageBox.Show($"An unexpected error occurred:  {ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region Write Max and Min Speed
+
+    private void WriteMaxSpeedLimit()
+    {
+        if (!MasterIsNotNull)
+        {
+            MessageBox.Show(ModbusService.MasterNullIndicator);
+            return;
+        }
+
+        try
+        {
+            if (MaxSpeedValue is DriveModel.MaxRatedSpeedOne or DriveModel.MaxRatedSpeedTwo)
+            {
+                DriveService.WriteRegister(
+                    ModbusService.Master!,
+                    SelectedSlaveId,
+                    (ushort)MasterAddresses.MaxSpeedLimit,
+                    (ushort)MaxSpeedValue);
+            }
+            else
+            {
+                MessageBox.Show(
+                    $"Maximum speed incorrect value. Min {DriveModel.MaxRatedSpeedTwo}RPM = 50Hz" +
+                    $" - Max {DriveModel.MaxRatedSpeedOne}RPM = 60Hz");
+            }
+        }
+        catch (TimeoutException e)
+        {
+            MessageBox.Show($"Error: A timeout occurred during the operation.  {e.Message}");
+        }
+        catch (Exception ex) // Catch any other unexpected exceptions
+        {
+            MessageBox.Show($"An unexpected error occurred:  {ex.Message}");
+        }
+    }
+
+    private void WriteMinSpeedLimit()
+    {
+        if (!MasterIsNotNull)
+        {
+            MessageBox.Show(ModbusService.MasterNullIndicator);
+            return;
+        }
+
+        try
+        {
+            if (MinSpeedValue is >= DriveModel.MinRatedSpeed and < DriveModel.MaxRatedSpeedTwo)
+            {
+                DriveService.WriteRegister(
+                    ModbusService.Master!,
+                    SelectedSlaveId,
+                    (ushort)MasterAddresses.MinSpeedLimit,
+                    (ushort)MinSpeedValue);
+            }
+            else
+            {
+                MessageBox.Show(
+                    $"Minimum speed value is out of range. Min {DriveModel.MinRatedSpeed}RPM" +
+                    $" - Max {DriveModel.MaxRatedSpeedTwo - 1}RPM");
+            }
+        }
+        catch (TimeoutException e)
+        {
+            MessageBox.Show($"Error: A timeout occurred during the operation.  {e.Message}");
+        }
+        catch (Exception ex) // Catch any other unexpected exceptions
+        {
+            MessageBox.Show($"An unexpected error occurred:  {ex.Message}");
+        }
+    }
+
+    #endregion
+
+    #region Write Motor Rated Voltage, Current, Frequency
+
+    private void MotorRatedVoltage()
+    {
+        if (!MasterIsNotNull)
+        {
+            MessageBox.Show(ModbusService.MasterNullIndicator);
+            return;
+        }
+
+        try
+        {
+            if (MotorRatedVoltValue is >= DriveModel.MinRatedVolt and <= DriveModel.MaxRatedVolt)
+            {
+                DriveService.WriteRegister(
+                    ModbusService.Master!,
+                    SelectedSlaveId,
+                    (ushort)MasterAddresses.MotorRatedVolt,
+                    (ushort)MotorRatedVoltValue);
+            }
+            else
+            {
+                MessageBox.Show(
+                    $"Rated voltage incorrect value. Range Min {DriveModel.MinRatedVolt}V - Max {DriveModel.MaxRatedVolt}V");
+            }
         }
         catch (TimeoutException ex)
         {
@@ -500,104 +750,98 @@ public class MainViewModel : ViewModelBase
         {
             MessageBox.Show($"An unexpected error occurred:  {ex.Message}");
         }
-        finally
-        {
-            // Ensure the port is closed even if an exception occurs
-            MessageBox.Show("finally");
-        }
-    }
-
-    private void WriteDecelerationTime()
-    {
-        DriveService.WriteRegister(
-            ModbusService.Master,
-            SelectedSlaveId,
-            (ushort)MasterAddresses.DecelerationTime,
-            (ushort)DecelerationTimeValue);
-    }
-
-    #endregion
-
-    #region Write Max and Min Frequency Range
-
-    private void WriteMaxFrequencyRange()
-    {
-        if (MaxFrequencyValue > DriveModel.MaxLimitSpeed)
-            MessageBox.Show("The Maximum speed value is out of range. The valid values is 3000 = 50Hz or 3600 = 60Hz");
-        if (MaxFrequencyValue < DriveModel.MinLimitSpeed)
-            MessageBox.Show("The Maximum speed value is out of range. The valid values is 3000 = 50Hz or 3600 = 60Hz");
-
-        if (MaxFrequencyValue is >= DriveModel.MinLimitSpeed and <= DriveModel.MaxLimitSpeed)
-        {
-            DriveService.WriteRegister(
-                ModbusService.Master,
-                SelectedSlaveId,
-                (ushort)MasterAddresses.MaxHz,
-                (ushort)MaxFrequencyValue);
-        }
-    }
-
-    private void WriteMinFrequencyRange()
-    {
-        DriveService.WriteRegister(
-            ModbusService.Master,
-            SelectedSlaveId,
-            (ushort)MasterAddresses.MinHz,
-            (ushort)MinFrequencyValue);
-    }
-
-    #endregion
-
-    #region Write Motor Rated Voltage, Current, Frequency
-
-    private void MotorRatedVoltage()
-    {
-        DriveService.WriteRegister(
-            ModbusService.Master,
-            SelectedSlaveId,
-            (ushort)MasterAddresses.MotorRatedVolt,
-            (ushort)MotorRatedVoltValue);
     }
 
     private void MotorRatedCurrent()
     {
+        if (!MasterIsNotNull)
+        {
+            MessageBox.Show(ModbusService.MasterNullIndicator);
+            return;
+        }
+
         try
         {
-            DriveService.WriteRegister(
-                ModbusService.Master,
-                SelectedSlaveId,
-                (ushort)MasterAddresses.MotorRatedCurrent,
-                (ushort)MotorRatedCurrentValue);
+            // Convert user input to raw value readable for drive
+            double currentRatedValue = MotorRatedCurrentValue * DriveModel.RawValueFrequency;
+
+
+            if (currentRatedValue is >= DriveModel.MinRatedCurrent and <= DriveModel.MaxRatedCurrent)
+            {
+                DriveService.WriteRegister(
+                    ModbusService.Master!,
+                    SelectedSlaveId,
+                    (ushort)MasterAddresses.MotorRatedCurrent,
+                    (ushort)currentRatedValue);
+            }
+            else
+            {
+                MessageBox.Show("The rated current is out of range. Range is Min 2.6A - Max 10.5A");
+            }
         }
         catch (TimeoutException ex)
         {
-            // Log error or show message to user
-            MessageBox.Show($"Modbus TimeOut: {ex.Message}");
+            MessageBox.Show($"Error: A timeout occurred during the operation.  {ex.Message}");
+        }
+        catch (Exception ex) // Catch any other unexpected exceptions
+        {
+            MessageBox.Show($"An unexpected error occurred:  {ex.Message}");
         }
     }
 
     private void MotorRatedFrequency()
     {
-        DriveService.WriteRegister(
-            ModbusService.Master,
-            SelectedSlaveId,
-            (ushort)MasterAddresses.MotorRatedFrequency,
-            (ushort)MotorRatedFrequencyValue);
+        if (!MasterIsNotNull)
+        {
+            MessageBox.Show(ModbusService.MasterNullIndicator);
+            return;
+        }
+
+        try
+        {
+            if (MotorRatedFrequencyValue is DriveModel.MaxRatedFrequencyTwo or DriveModel.MaxRatedFrequencyOne)
+            {
+                DriveService.WriteRegister(
+                    ModbusService.Master!,
+                    SelectedSlaveId,
+                    (ushort)MasterAddresses.MotorRatedFrequency,
+                    (ushort)MotorRatedFrequencyValue);
+
+                SliderMaxValue = MotorRatedFrequencyValue;
+            }
+            else
+            {
+                MessageBox.Show("Rated frequency incorrect value. Value must be 50Hz or 60Hz");
+            }
+        }
+        catch (TimeoutException ex)
+        {
+            MessageBox.Show($"Error: A timeout occurred during the operation.  {ex.Message}");
+        }
+        catch (Exception ex) // Catch any other unexpected exceptions
+        {
+            MessageBox.Show($"An unexpected error occurred:  {ex.Message}");
+        }
     }
 
     #endregion
 
-    #region Read Drive Status and Digital Input 1
+    #region Read Drive Status
 
     private async Task ReadDriveStatus()
     {
-        ushort[] values = await DriveService.ReadStatusAndDigitalInput1(
-            ModbusService.Master,
+        if (!MasterIsNotNull)
+        {
+            MessageBox.Show(ModbusService.MasterNullIndicator);
+            return;
+        }
+
+        ushort byteDriveStatus = await DriveService.ReadAsyncRegister(
+            ModbusService.Master!,
             SelectedSlaveId,
             (ushort)MasterAddresses.DriveStatus,
-            (ushort)RegistersToRead.Seven);
+            (ushort)RegistersToRead.Two);
 
-        ushort byteDriveStatus = values[0];
 
         // Get each bit from drive status byte
         RunningStatus = GetBitFromByte.GetBitFromRegister(byteDriveStatus, (ushort)DriveStatus.Running);

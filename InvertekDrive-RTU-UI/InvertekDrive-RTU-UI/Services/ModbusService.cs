@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+﻿using System.Collections.ObjectModel;
 using System.IO.Ports;
-using InvertekDrive_RTU_UI.ViewModel;
+using System.Windows;
 using Modbus.Device;
 using Modbus.Serial;
 
@@ -10,16 +8,16 @@ namespace InvertekDrive_RTU_UI.Services;
 
 public static class ModbusService
 {
-    public static bool IsConnected {get;  set;} // If Modbus is connected successfully, the var will be true
-    
+    public static bool IsConnected { get; set; } // If Modbus is connected successfully, the var will be true
+
     #region Modbus Master Access
 
-    public static SerialPortAdapter? Adapter { get; private set; }
+    private static SerialPortAdapter? Adapter { get; set; }
     public static IModbusSerialMaster? Master { get; private set; }
-    public static SerialPort? SerialStation { get; private set; }
+    private static SerialPort? SerialStation { get; set; }
 
     #endregion
-    
+
 
     #region Check if Master is not null
 
@@ -27,6 +25,8 @@ public static class ModbusService
     {
         return master != null;
     }
+
+    public const string MasterNullIndicator = "Master Is Null. Check Connection";
 
     #endregion
 
@@ -63,15 +63,14 @@ public static class ModbusService
             SerialStation.Open();
             Adapter = new SerialPortAdapter(SerialStation);
             Master = ModbusSerialMaster.CreateRtu(Adapter);
-            
+
             return true;
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            MessageBox.Show($"Modbus connection error {e.Message}");
             return false;
         }
-
     }
 
     #endregion
@@ -85,14 +84,14 @@ public static class ModbusService
             Master?.Dispose();
             Adapter?.Dispose();
             SerialStation?.Close();
+
+            return true;
         }
         catch (Exception e)
         {
-            Debug.WriteLine(e);
+            MessageBox.Show($"Modbus connection error {e.Message}");
             return false;
         }
-
-        return true;
     }
 
     #endregion

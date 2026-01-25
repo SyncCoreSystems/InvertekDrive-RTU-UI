@@ -2,10 +2,10 @@
 
 public class MotorModel
 {
-    public double
+    public int
         RatedVoltage { get; set; }
     public double
         RatedCurrent { get; set; }
-    public double
+    public int
         RatedFrequency { get; set; }
 }
