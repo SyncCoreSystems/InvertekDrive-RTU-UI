@@ -1,8 +1,9 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Windows.Input;
 
 namespace InvertekDrive_RTU_UI.Commands;
 
-public class RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null) : ICommand
+public class RelayCommand(Action<object> execute, Func<object?, bool>? canExecute = null) : ICommand
 {
     private readonly Action<object?> _execute = execute;
     private readonly Func<object?, bool>? _canExecute = canExecute;

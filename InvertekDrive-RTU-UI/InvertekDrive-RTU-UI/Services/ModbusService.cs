@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO.Ports;
 using InvertekDrive_RTU_UI.ViewModel;
@@ -33,7 +34,7 @@ public static class ModbusService
 
     public static bool ConnectModbusMaster(string selectedPort,
         int baudRate,
-        Int32 dataBits,
+        int dataBits,
         string parity,
         int stopBits
     )
@@ -57,26 +58,17 @@ public static class ModbusService
                 2 => StopBits.Two,
                 _ => StopBits.One
             };
+            SerialStation.ReadTimeout = 1000;
+            SerialStation.WriteTimeout = 1000;
             SerialStation.Open();
             Adapter = new SerialPortAdapter(SerialStation);
             Master = ModbusSerialMaster.CreateRtu(Adapter);
-            
-            Debug.WriteLine(selectedPort);
-            Debug.WriteLine(baudRate);
-            Debug.WriteLine(dataBits);
-            Debug.WriteLine(parity);
-            Debug.WriteLine(stopBits);
             
             return true;
         }
         catch (Exception e)
         {
             Debug.WriteLine(e);
-            Debug.WriteLine(selectedPort);
-            Debug.WriteLine(baudRate);
-            Debug.WriteLine(dataBits);
-            Debug.WriteLine(parity);
-            Debug.WriteLine(stopBits);
             return false;
         }
 

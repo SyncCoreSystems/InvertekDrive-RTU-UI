@@ -7,12 +7,13 @@
         mc:Ignorable="d"
         Title="Invertek Drive Controller - Modbus RTU"
         Icon="Assets/Icons/electric-motor.ico"
-        Height="750" Width="1000"
+        Height="800" Width="1000"
         RenderOptions.BitmapScalingMode="HighQuality"
         SizeToContent="WidthAndHeight"
         ResizeMode="CanMinimize,NoResize"
         WindowStartupLocation="CenterScreen"
         Background="#F0F0F0">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -39,24 +40,24 @@
                 </Grid.ColumnDefinitions>
 
                 <Label Grid.Column="0" Content="COM Port:" Margin="5,0" />
-                <ComboBox Grid.Column="1" x:Name="cmbComPort" Margin="5,0" ItemsSource="{Binding ComPorts}"
+                <ComboBox Grid.Column="1" Margin="5,0" ItemsSource="{Binding ComPorts}"
                           Text="{Binding SelectedComPort}" />
 
                 <Label Grid.Column="2" Content="Baud Rate:" Margin="5,0" />
-                <ComboBox Grid.Column="3" x:Name="cmbBaudRate" Margin="5,0"
+                <ComboBox Grid.Column="3" Margin="5,0"
                           ItemsSource="{Binding BaudRate}"
                           Text="{Binding SelectedBaudRate}" />
 
                 <Label Grid.Column="4" Content="Slave ID:" Margin="5,0" />
-                <TextBox Grid.Column="5" x:Name="txtSlaveId" Text="{Binding SelectedSlaveId}" Margin="5,0" />
+                <TextBox Grid.Column="5" Text="{Binding SelectedSlaveId}" Margin="5,0" />
 
-                <Button Grid.Column="7" x:Name="btnConnect" Content="Connect"
+                <Button Grid.Column="7" Content="Connect"
                         Style="{StaticResource ConnectButton}"
                         Command="{Binding ConnectModbusDevice}"/>
-                <Button Grid.Column="8" x:Name="btnDisconnect" Content="Disconnect"
-                        Style="{StaticResource ResetButton}"
+                <Button Grid.Column="8" Content="Disconnect"
+                        Style="{StaticResource DisconnectButton}"
                         Command="{Binding DisconnectModbusDevice}"/>
-                <Button Grid.Column="9" x:Name="btnRefreshPorts" Content="Port Refresh"
+                <Button Grid.Column="9" Content="Port Refresh"
                         Style="{StaticResource PortRefresh}"
                         Command="{Binding UpdateLocalPorts}" />
             </Grid>
@@ -79,7 +80,8 @@
                             <TextBlock Text="CURRENT SPEED" FontSize="11" Foreground="#666"
                                        FontWeight="Normal" Margin="0,0,0,5" />
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="txtCurrentSpeed" Text="1450" FontSize="24"
+                                <TextBlock Text="{Binding CurrentRpm}" 
+                                FontSize="24"
                                            FontWeight="Bold" Foreground="#2C3E50" />
                                 <TextBlock Text=" RPM" FontSize="14" Foreground="#7F8C8D"
                                            VerticalAlignment="Bottom" Margin="5,0,0,2" />
@@ -93,7 +95,8 @@
                             <TextBlock Text="OUTPUT FREQUENCY" FontSize="11" Foreground="#666"
                                        FontWeight="Normal" Margin="0,0,0,5" />
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="txtOutputFrequency" Text="48.3" FontSize="24"
+                                <TextBlock Text="{Binding OutFrequency, 
+                                StringFormat={}{0:F1}}" FontSize="24"
                                            FontWeight="Bold" Foreground="#2C3E50" />
                                 <TextBlock Text=" Hz" FontSize="14" Foreground="#7F8C8D"
                                            VerticalAlignment="Bottom" Margin="5,0,0,2" />
@@ -107,7 +110,8 @@
                             <TextBlock Text="MOTOR CURRENT" FontSize="11" Foreground="#666"
                                        FontWeight="Normal" Margin="0,0,0,5" />
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="txtMotorCurrent" Text="12.5" FontSize="24"
+                                <TextBlock 
+                                           Text="{Binding OutCurrent, StringFormat={}{0:F1}}" FontSize="24"
                                            FontWeight="Bold" Foreground="#2C3E50" />
                                 <TextBlock Text=" A" FontSize="14" Foreground="#7F8C8D"
                                            VerticalAlignment="Bottom" Margin="5,0,0,2" />
@@ -121,7 +125,7 @@
                             <TextBlock Text="DC BUS VOLTAGE" FontSize="11" Foreground="#666"
                                        FontWeight="Normal" Margin="0,0,0,5" />
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock x:Name="txtDcBusVoltage" Text="540" FontSize="24"
+                                <TextBlock Text="{Binding DcBusVolt}" FontSize="24"
                                            FontWeight="Bold" Foreground="#2C3E50" />
                                 <TextBlock Text=" V" FontSize="14" Foreground="#7F8C8D"
                                            VerticalAlignment="Bottom" Margin="5,0,0,2" />
@@ -132,8 +136,8 @@
 
                 <!-- Status Indicator -->
                 <StackPanel Orientation="Horizontal" Margin="10,15,0,5">
-                    <Ellipse x:Name="statusIndicator" Width="14" Height="14"
-                             Fill="{Binding DriveRunning, Converter={StaticResource BoolToColorConverter}}"
+                    <Ellipse Width="14" Height="14"
+                             Fill="{Binding RunningStatus, Converter={StaticResource BoolToColorConverter}}"
                              Margin="0,0,10,0">
                         <Ellipse.Effect>
                             <DropShadowEffect Color="#27AE60" ShadowDepth="0" BlurRadius="8" />
@@ -141,10 +145,10 @@
                     </Ellipse>
                     <TextBlock FontSize="14" FontWeight="Normal">
                         <Run Text="Drive Status:" Foreground="#333" />
-                        <Run x:Name="txtDriveStatus" Text="{Binding DriveStatus, Mode=OneWay}" FontWeight="SemiBold" Foreground="#2C3E50" />
+                        <Run Text="{Binding CurrentlyDriveStatus, Mode=OneWay}" FontWeight="SemiBold" Foreground="#2C3E50" />
                     </TextBlock>
                     <!-- Modbus Status Indicator -->
-                    <Ellipse x:Name="modbusStatusIndicator" Width="14" Height="14"
+                    <Ellipse Width="14" Height="14"
                              Fill="{Binding ModbusConnected, Converter={StaticResource BoolToColorConverter}}"
                              Margin="50,0,10,0">
                         <Ellipse.Effect>
@@ -153,7 +157,7 @@
                     </Ellipse>
                     <TextBlock FontSize="14" FontWeight="Normal">
                         <Run Text="Modbus Status:" Foreground="#333" />
-                        <Run x:Name="txtModbusStatus" Text="{Binding ModbusConnectionStatus, Mode=OneWay}"
+                        <Run Text="{Binding ModbusConnectionStatus, Mode=OneWay}"
                              FontWeight="SemiBold"
                              Foreground="#2C3E50" />
                     </TextBlock>
@@ -183,23 +187,25 @@
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <Button Grid.Row="0" Grid.Column="0" x:Name="btnStart"
+                        <Button Grid.Row="0" Grid.Column="0"
                                 Content="▶ START" Style="{StaticResource StartButton}"
                                 Command="{Binding ChangeToRunDrive}"/>
-                        <Button Grid.Row="0" Grid.Column="1" x:Name="btnStop"
+                        <Button Grid.Row="0" Grid.Column="1"
                                 Content="■ STOP" Style="{StaticResource StopButton}"
                                 Command="{Binding ChangeToStopDrive}"/>
 
                         <Button Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
-                                x:Name="btnReset" Content="⟳ RESET FAULT"
-                                Style="{StaticResource ResetButton}" />
+                                Content="⟳ RESET FAULT"
+                                Style="{StaticResource ResetButton}"
+                                Command="{Binding ResetDrive}"/>
                     </Grid>
 
                     <!-- Speed Control -->
-                    <StackPanel Margin="0,20,0,0">
+                    <StackPanel Margin="0,70,0,0">
                         <Label Content="Speed Setpoint" FontWeight="SemiBold" FontSize="14" />
 
-                        <TextBlock x:Name="txtSpeedSetpoint" Text="50" FontSize="36"
+                        <TextBlock Text="{Binding SetFrequencyValue, StringFormat={}{0:F1}}" 
+                        FontSize="36"
                                    FontWeight="Bold" HorizontalAlignment="Center"
                                    Foreground="#2C3E50" Margin="0,10,0,0">
                             <TextBlock.Effect>
@@ -209,9 +215,10 @@
                         <TextBlock Text="Hz" FontSize="16" Foreground="#7F8C8D"
                                    HorizontalAlignment="Center" Margin="0,-5,0,10" />
 
-                        <Slider x:Name="sliderSpeed" Minimum="0" Maximum="60" Value="50"
-                                TickFrequency="5" IsSnapToTickEnabled="True"
-                                TickPlacement="BottomRight" Margin="10,10,10,5" />
+                        <Slider Minimum="0" Maximum="60"
+                                Value="{Binding SetFrequencyValue,UpdateSourceTrigger=PropertyChanged}"
+                                TickFrequency="0.1" IsSnapToTickEnabled="True"
+                                TickPlacement="BottomRight" Margin="10,10,10,5"/>
 
                         <Grid Margin="10,5,10,0">
                             <Grid.ColumnDefinitions>
@@ -242,10 +249,12 @@
                         </Grid.ColumnDefinitions>
                         <Label Grid.Column="0" Content="Acceleration Time (s):"
                                VerticalAlignment="Center" />
-                        <TextBox Grid.Column="1" x:Name="txtAccelTime" Text="10.0"
-                                 Margin="5,0" />
+                        <TextBox Grid.Column="1"
+                                 Text="{Binding AccelerationTimeValue}"
+                                 Margin="5,0"/>
                         <Button Grid.Column="2" Content="Write"
-                                Style="{StaticResource WriteButton}" />
+                                Style="{StaticResource WriteButton}"
+                                Command="{Binding WriteAcceleration}"/>
                     </Grid>
 
                     <!-- Deceleration Time -->
@@ -257,10 +266,11 @@
                         </Grid.ColumnDefinitions>
                         <Label Grid.Column="0" Content="Deceleration Time (s):"
                                VerticalAlignment="Center" />
-                        <TextBox Grid.Column="1" x:Name="txtDecelTime" Text="10.0"
+                        <TextBox Grid.Column="1" Text="{Binding DecelerationTimeValue}"
                                  Margin="5,0" />
                         <Button Grid.Column="2" Content="Write"
-                                Style="{StaticResource WriteButton}" />
+                                Style="{StaticResource WriteButton}"
+                                Command="{Binding WriteDeceleration}"/>
                     </Grid>
 
                     <!-- Max Frequency -->
@@ -270,12 +280,13 @@
                             <ColumnDefinition Width="100" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="Max Frequency (Hz):"
+                        <Label Grid.Column="0" Content="Max Speed (RPM):"
                                VerticalAlignment="Center" />
-                        <TextBox Grid.Column="1" x:Name="txtMaxFreq" Text="50.0"
+                        <TextBox Grid.Column="1" Text="{Binding MaxFrequencyValue}"
                                  Margin="5,0" />
                         <Button Grid.Column="2" Content="Write"
-                                Style="{StaticResource WriteButton}" />
+                                Style="{StaticResource WriteButton}"
+                                Command="{Binding WriteMaxFrequency}"/>
                     </Grid>
 
                     <!-- Min Frequency -->
@@ -285,12 +296,13 @@
                             <ColumnDefinition Width="100" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="Min Frequency (Hz):"
+                        <Label Grid.Column="0" Content="Min Speed (RPM):"
                                VerticalAlignment="Center" />
-                        <TextBox Grid.Column="1" x:Name="txtMinFreq" Text="0.0"
+                        <TextBox Grid.Column="1" Text="{Binding MinFrequencyValue}"
                                  Margin="5,0" />
                         <Button Grid.Column="2" Content="Write"
-                                Style="{StaticResource WriteButton}" />
+                                Style="{StaticResource WriteButton}" 
+                                Command="{Binding WriteMinFrequency}"/>
                     </Grid>
 
                     <!-- Motor Rated Current -->
@@ -302,35 +314,67 @@
                         </Grid.ColumnDefinitions>
                         <Label Grid.Column="0" Content="Motor Rated Current (A):"
                                VerticalAlignment="Center" />
-                        <TextBox Grid.Column="1" x:Name="txtMotorRatedCurrent" Text="15.0"
+                        <TextBox Grid.Column="1" Text="{Binding MotorRatedCurrentValue}"
                                  Margin="5,0" />
                         <Button Grid.Column="2" Content="Write"
-                                Style="{StaticResource WriteButton}" />
+                                Style="{StaticResource WriteButton}"
+                                Command="{Binding WriteMotorRatedCurrent}"/>
+                    </Grid>
+                    <!-- Motor Rated Voltage -->
+                    <Grid Margin="0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="Motor Rated Voltage (V):"
+                               VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" Text="{Binding MotorRatedVoltValue}"
+                                 Margin="5,0" />
+                        <Button Grid.Column="2" Content="Write"
+                                Style="{StaticResource WriteButton}" 
+                                Command="{Binding WriteMotorRatedVolt}"/>
+                    </Grid>
+                    <!-- Motor Rated Frequency -->
+                    <Grid Margin="0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0" Content="Motor Rated Frequency (Hz):"
+                               VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" Text="{Binding MotorRatedFrequencyValue}"
+                                 Margin="5,0" />
+                        <Button Grid.Column="2" Content="Write"
+                                Style="{StaticResource WriteButton}"
+                                Command="{Binding WriteMotorRatedFrequency}"/>
                     </Grid>
                 </StackPanel>
             </GroupBox>
         </Grid>
 
         <!-- Communication Log -->
-        <GroupBox Grid.Row="3" Header="Communication Log" Height="180">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
-                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto"
-                              Background="#2C3E50">
-                    <TextBlock x:Name="txtLog" TextWrapping="Wrap" Padding="10"
-                               FontFamily="Consolas" FontSize="12" Foreground="#ECF0F1" />
-                </ScrollViewer>
-
-                <Button Grid.Row="1" Content="Clear Log" HorizontalAlignment="Right"
-                        Margin="5" Padding="10,5"
-                        Background="#95A5A6" Foreground="White" BorderThickness="0" />
-            </Grid>
-        </GroupBox>
+        <!-- <GroupBox Grid.Row="3" Header="Communication Log" Height="180"> -->
+        <!--     <Grid> -->
+        <!--         <Grid.RowDefinitions> -->
+        <!--             <RowDefinition Height="*" /> -->
+        <!--             <RowDefinition Height="Auto" /> -->
+        <!--         </Grid.RowDefinitions> -->
+        <!-- -->
+        <!--         <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" -->
+        <!--                       Background="#2C3E50"> -->
+        <!--             <TextBlock x:Name="txtLog" TextWrapping="Wrap" Padding="10" -->
+        <!--                        FontFamily="Consolas" FontSize="12" Foreground="#ECF0F1" /> -->
+        <!--         </ScrollViewer> -->
+        <!-- -->
+        <!--         <Button Grid.Row="1" Content="Clear Log" HorizontalAlignment="Right" -->
+        <!--                 Margin="5" Padding="10,5" -->
+        <!--                 Background="#95A5A6" Foreground="White" BorderThickness="0" /> -->
+        <!--     </Grid> -->
+        <!-- </GroupBox> -->
         <Image Grid.Row="4" Source="Assets/Icons/horizontallogo.png" Stretch="Fill" HorizontalAlignment="Center"
                VerticalAlignment="Center" Width="200" Height="60" Margin="0,0,0,10" />
     </Grid>
+    </ScrollViewer>
 </Window>
